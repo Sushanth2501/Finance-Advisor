@@ -1,0 +1,145 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up</title>
+    <style>
+        body {
+            background-image: url('backgrond.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .phone-container {
+            display: flex;
+            gap: 5px;
+        }
+        .phone-container select {
+            width: 25%;
+        }
+        .phone-container input {
+            width: 75%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="login-form">
+        <h2>Login</h2>
+        <input id="login-username" type="text" placeholder="Username" required>
+        <input id="login-password" type="password" placeholder="Password" required>
+        <button onclick="handleLogin()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="toggleForm()">Sign Up</a></p>
+    </div>
+
+    <div class="container" id="signup-form" style="display: none;">
+        <h2>Sign Up</h2>
+        <form onsubmit="signUpUser(event)">
+            <input name="firstName" type="text" placeholder="First Name" required>
+            <input name="middleName" type="text" placeholder="Middle Name">
+            <input name="lastName" type="text" placeholder="Last Name" required>
+            <input name="dob" type="date" required>
+            <div class="phone-container">
+                <select name="phoneCode" required>
+                    <option value="">+Code</option>
+                    <option value="+1">+1 (USA)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+91">+91 (India)</option>
+                    <option value="+61">+61 (Australia)</option>
+                </select>
+                <input name="phoneNumber" type="tel" placeholder="Phone Number" required>
+            </div>
+            <input name="email" type="email" placeholder="Email" required>
+            <input name="address" type="text" placeholder="Address" required>
+            <input name="username" type="text" placeholder="Username" required>
+            <input name="password" type="password" placeholder="Password" required>
+            <input name="confirmPassword" type="password" placeholder="Confirm Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="#" onclick="toggleForm()">Login</a></p>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const loginForm = document.getElementById('login-form');
+            const signUpForm = document.getElementById('signup-form');
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            signUpForm.style.display = signUpForm.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function handleLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+
+    const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+        // ✅ Store user info in localStorage
+        localStorage.setItem('loggedInUser', JSON.stringify(result.user));
+
+        alert(result.message);
+        window.location.href = 'interface.html';
+    } else {
+        alert(result.message);
+    }
+}
+
+        async function signUpUser(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = Object.fromEntries(new FormData(form).entries());
+
+            if (data.password !== data.confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            const res = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            alert(result.message);
+            if (res.ok) toggleForm();
+        }
+    </script>
+</body>
+</html>
